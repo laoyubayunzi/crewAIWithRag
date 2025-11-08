@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健康咨询助手</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#64748B',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        neutral: '#1F2937',
+                        light: '#F3F4F6'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all-300 {
+                transition: all 300ms ease-in-out;
+            }
+            .shadow-custom {
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            }
+        }
+        
+        /* 暗色模式样式 */
+        .dark {
+            @apply bg-gray-900 text-gray-100;
+        }
+        
+        .dark .bg-white {
+            @apply bg-gray-800;
+        }
+        
+        .dark .text-gray-800 {
+            @apply text-gray-200;
+        }
+        
+        .dark .text-gray-600 {
+            @apply text-gray-300;
+        }
+        
+        .dark .border-gray-200 {
+            @apply border-gray-700;
+        }
+        
+        .dark .bg-gray-50 {
+            @apply bg-gray-800;
+        }
+        
+        .dark .bg-gray-100 {
+            @apply bg-gray-700;
+        }
+        
+        .dark .shadow-custom {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fa fa-heartbeat text-primary text-2xl mr-2"></i>
+                        <span class="font-bold text-xl text-gray-800">健康咨询助手</span>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 transition-all-300 active:scale-95">
+                        <i class="fa fa-moon-o text-gray-600"></i>
+                    </button>
+                    <button id="help-button" class="ml-4 p-2 rounded-full hover:bg-gray-100 transition-all-300 active:scale-95">
+                        <i class="fa fa-question-circle text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 欢迎区域 -->
+        <div class="mb-8 text-center">
+            <h1 class="text-[clamp(2rem,5vw,3rem)] font-bold text-gray-800 mb-2">健康咨询与分析助手</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">基于AI技术的健康档案检索与分析系统，为您提供专业的健康建议和报告</p>
+        </div>
+
+        <!-- 仪表板卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-custom p-6 transform hover:scale-105 active:scale-95 cursor-pointer transition-all-300" onclick="document.getElementById('health-question-form')?.scrollIntoView({behavior: 'smooth'})">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">健康咨询</h3>
+                    <span class="p-2 rounded-full bg-blue-100 text-primary">
+                        <i class="fa fa-comments-o"></i>
+                    </span>
+                </div>
+                <p class="text-gray-600 mb-3">提交您的健康问题，获取专业分析</p>
+                <div class="text-2xl font-bold text-primary">AI驱动</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-custom p-6 transform hover:scale-105 transition-all-300">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">档案检索</h3>
+                    <span class="p-2 rounded-full bg-green-100 text-success">
+                        <i class="fa fa-search"></i>
+                    </span>
+                </div>
+                <p class="text-gray-600 mb-3">智能检索相关健康档案记录</p>
+                <div class="text-2xl font-bold text-success">精准匹配</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-custom p-6 transform hover:scale-105 transition-all-300">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">健康报告</h3>
+                    <span class="p-2 rounded-full bg-purple-100 text-purple-600">
+                        <i class="fa fa-file-text-o"></i>
+                    </span>
+                </div>
+                <p class="text-gray-600 mb-3">生成详细的健康分析报告</p>
+                <div class="text-2xl font-bold text-purple-600">PDF导出</div>
+            </div>
+        </div>
+
+        <!-- 主要交互区域 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左侧输入区域 -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-custom p-6 mb-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">健康问题咨询</h2>
+                    <form id="query-form" class="space-y-4">
+                        <div>
+                            <label for="health-query" class="block text-sm font-medium text-gray-700 mb-1">您的健康问题</label>
+                            <textarea 
+                                id="health-query" 
+                                rows="6" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all-300"
+                                placeholder="请详细描述您的健康问题，例如：'高血压患者的饮食建议'、'糖尿病并发症预防'等..."
+                                required
+                            ></textarea>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex space-x-2">
+                                <button type="button" id="clear-button" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all-300 active:scale-95">
+                                    <i class="fa fa-trash-o mr-1"></i> 清空
+                                </button>
+                            </div>
+                            <button 
+                                type="submit" 
+                                id="submit-button" 
+                                class="px-6 py-2 bg-gradient-primary text-white rounded-lg hover:shadow-lg transition-all-300 flex items-center active:scale-95"
+                            >
+                                <i class="fa fa-paper-plane-o mr-2"></i> 提交咨询
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 历史记录 -->
+                <div class="bg-white rounded-xl shadow-custom p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">历史记录</h2>
+                        <div class="flex items-center space-x-2">
+                            <div class="relative">
+                                <input 
+                                    type="text" 
+                                    id="history-search" 
+                                    placeholder="搜索历史..." 
+                                    class="w-32 sm:w-40 px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary"
+                                >
+                                <i class="fa fa-search absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                            </div>
+                            <button id="clear-history" class="text-sm text-gray-500 hover:text-primary transition-all-300 active:scale-95 focus:outline-none">
+                                <i class="fa fa-eraser mr-1"></i> 清空
+                            </button>
+                        </div>
+                    </div>
+                    <div id="history-list" class="space-y-3 max-h-60 overflow-y-auto">
+                        <p class="text-gray-500 text-center py-4">暂无历史记录</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧结果区域 -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-custom p-6 min-h-[500px] flex flex-col">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-800">分析结果</h2>
+                        <div class="flex space-x-2">
+                            <button id="download-pdf" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all-300 hidden active:scale-95 focus:outline-none">
+                                <i class="fa fa-download mr-1"></i> 下载PDF
+                            </button>
+                            <button id="copy-button" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all-300 hidden active:scale-95 focus:outline-none">
+                                <i class="fa fa-copy mr-1"></i> 复制
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 初始状态 -->
+                    <div id="initial-state" class="flex-grow flex flex-col items-center justify-center text-center p-8">
+                        <div class="p-6 rounded-full bg-blue-50 text-primary mb-4">
+                            <i class="fa fa-stethoscope text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">开始您的健康咨询</h3>
+                        <p class="text-gray-600 max-w-md">在左侧输入您的健康问题，我们将为您提供基于健康档案的专业分析和建议</p>
+                    </div>
+                    
+                    <!-- 加载状态 -->
+                    <div id="loading-state" class="flex-grow flex flex-col items-center justify-center text-center p-8 hidden">
+                        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mb-4"></div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">正在分析中...</h3>
+                        <p class="text-gray-600 max-w-md">我们正在检索相关健康档案并生成分析报告，请稍候</p>
+                        <div class="mt-4 w-full max-w-md">
+                            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div id="progress-bar" class="h-full bg-primary rounded-full w-0 transition-all duration-300"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 结果状态 -->
+                    <div id="result-state" class="flex-grow hidden">
+                        <div id="query-display" class="mb-6 p-4 bg-gray-50 rounded-lg border-l-4 border-primary">
+                            <h4 class="font-medium text-gray-700 mb-1">您的问题：</h4>
+                            <p id="user-query-text" class="text-gray-800"></p>
+                        </div>
+                        <div id="result-content" class="prose max-w-none overflow-y-auto max-h-[500px]">
+                            <!-- 结果将在这里显示 -->
+                        </div>
+                    </div>
+                    
+                    <!-- 错误状态 -->
+                    <div id="error-state" class="flex-grow flex flex-col items-center justify-center text-center p-8 hidden">
+                        <div class="p-6 rounded-full bg-red-50 text-danger mb-4">
+                            <i class="fa fa-exclamation-circle text-4xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">发生错误</h3>
+                        <p id="error-message" class="text-gray-600 max-w-md mb-4">处理您的请求时发生错误，请稍后再试</p>
+                        <button id="retry-button" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all-300 active:scale-95 focus:outline-none">
+                            <i class="fa fa-refresh mr-2"></i> 重试
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-gray-200 py-6">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center">
+                        <i class="fa fa-heartbeat text-primary text-xl mr-2"></i>
+                        <span class="font-bold text-gray-800">健康咨询助手</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">基于AI和RAG技术的健康咨询系统</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-500 hover:text-primary transition-all-300 active:scale-95">
+                        <i class="fa fa-github text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-500 hover:text-primary transition-all-300 active:scale-95">
+                        <i class="fa fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-500 hover:text-primary transition-all-300 active:scale-95">
+                        <i class="fa fa-linkedin text-xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-6 text-center text-sm text-gray-500">
+                &copy; 2024 健康咨询助手 | <a href="#" id="privacy-policy-link" class="text-primary hover:underline cursor-pointer">隐私政策</a> | <a href="#" id="terms-link" class="text-primary hover:underline cursor-pointer">使用条款</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 隐私政策模态框 -->
+    <div id="privacy-policy-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50" id="privacy-policy-overlay"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[80vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">隐私政策</h2>
+                    <button id="close-privacy-policy" class="text-gray-500 hover:text-gray-700 active:scale-95">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="space-y-4 text-gray-700">
+                    <p class="text-gray-500 text-sm mb-6">最后更新：2024年10月1日</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">1. 引言</h3>
+                    <p>欢迎使用健康咨询助手。保护您的隐私对我们至关重要。本隐私政策旨在帮助您了解我们如何收集、使用、存储和保护您的个人信息。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">2. 信息收集</h3>
+                    <p>当您使用我们的服务时，我们可能收集以下类型的信息：</p>
+                    <ul class="list-disc pl-5 space-y-1 mt-2">
+                        <li>您提供的健康咨询问题和相关信息</li>
+                        <li>设备信息（如浏览器类型、操作系统版本）</li>
+                        <li>使用情况数据（如查询历史、页面访问记录）</li>
+                        <li>本地存储的历史记录数据（仅存储在您的设备上）</li>
+                    </ul>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">3. 信息使用</h3>
+                    <p>我们使用收集的信息用于以下目的：</p>
+                    <ul class="list-disc pl-5 space-y-1 mt-2">
+                        <li>提供、维护和改进我们的服务</li>
+                        <li>处理您的健康咨询请求</li>
+                        <li>生成健康分析报告和PDF文档</li>
+                        <li>提供个性化的用户体验</li>
+                        <li>确保服务的安全性和稳定性</li>
+                    </ul>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">4. 信息保护</h3>
+                    <p>我们采取合理的技术和组织措施来保护您的个人信息免受未经授权的访问、使用或泄露。这些措施包括：</p>
+                    <ul class="list-disc pl-5 space-y-1 mt-2">
+                        <li>数据加密</li>
+                        <li>访问控制</li>
+                        <li>安全审计</li>
+                        <li>定期安全评估</li>
+                    </ul>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">5. 数据存储</h3>
+                    <p>您的健康咨询问题和生成的报告可能会临时存储在我们的服务器上，但我们承诺不会将这些信息用于任何未经授权的目的。本地历史记录仅存储在您的设备上，我们不会主动收集这些数据。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">6. 第三方服务</h3>
+                    <p>我们的服务可能包含第三方服务提供商的链接或集成。我们不对这些第三方的隐私政策和实践负责。我们建议您在使用这些第三方服务前查看其隐私政策。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">7. 您的权利</h3>
+                    <p>您有权访问、更正或删除我们持有的关于您的个人信息。如果您希望行使这些权利，请联系我们。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">8. 政策更新</h3>
+                    <p>我们可能会不时更新本隐私政策。当我们进行重大更改时，我们将通过在网站上发布新的隐私政策来通知您。我们鼓励您定期查看本隐私政策。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">9. 联系我们</h3>
+                    <p>如果您对本隐私政策有任何问题或疑虑，请随时联系我们。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 使用条款模态框 -->
+    <div id="terms-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50" id="terms-overlay"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[80vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">使用条款</h2>
+                    <button id="close-terms" class="text-gray-500 hover:text-gray-700 active:scale-95">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="space-y-4 text-gray-700">
+                    <p class="text-gray-500 text-sm mb-6">最后更新：2024年10月1日</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">1. 接受条款</h3>
+                    <p>通过访问或使用健康咨询助手网站（以下简称"服务"），您同意遵守本使用条款。如果您不同意本条款的任何部分，您不得使用我们的服务。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">2. 服务描述</h3>
+                    <p>健康咨询助手是一个基于AI技术的健康档案检索与分析系统，旨在为用户提供健康咨询和建议。我们的服务包括但不限于：健康问题分析、相关健康档案检索、生成健康报告等。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">3. 使用限制</h3>
+                    <p>您同意在使用我们的服务时遵守以下规定：</p>
+                    <ul class="list-disc pl-5 space-y-1 mt-2">
+                        <li>仅将服务用于合法目的</li>
+                        <li>不提交虚假、误导或恶意的健康信息</li>
+                        <li>不干扰或破坏服务的正常运行</li>
+                        <li>不尝试未经授权访问我们的系统或数据</li>
+                        <li>不使用自动工具或脚本访问服务</li>
+                    </ul>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">4. 免责声明</h3>
+                    <p>我们提供的健康咨询和建议仅供参考，不构成医疗诊断或治疗建议。在采取任何健康行动前，您应咨询专业医疗人员的意见。我们不对因使用我们的服务而导致的任何后果承担责任。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">5. 知识产权</h3>
+                    <p>服务中的所有内容，包括但不限于文本、图像、代码、设计等，均受版权和其他知识产权法律的保护。未经我们的明确书面许可，您不得复制、修改、分发或使用这些内容。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">6. 用户内容</h3>
+                    <p>您保留对您提交的内容的所有权，但您授予我们全球性的、非独占的、免版税的许可，以使用、存储、显示和分发您的内容，以提供和改进我们的服务。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">7. 终止</h3>
+                    <p>我们有权在任何时候，以任何理由，终止或暂停您对服务的访问，无需事先通知。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">8. 责任限制</h3>
+                    <p>在法律允许的最大范围内，我们不对因使用或无法使用我们的服务而导致的任何间接、附带、特殊或后果性损害承担责任。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">9. 条款更新</h3>
+                    <p>我们可能会不时更新本使用条款。当我们进行重大更改时，我们将通过在网站上发布新的条款来通知您。您继续使用我们的服务将被视为接受更新后的条款。</p>
+                    
+                    <h3 class="text-lg font-semibold text-gray-800 mt-6 mb-3">10. 法律适用</h3>
+                    <p>本使用条款受中国法律管辖。任何与本条款相关的争议应提交至有管辖权的法院解决。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 帮助模态框 -->
+    <div id="help-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50" id="modal-overlay"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">使用帮助</h2>
+                    <button id="close-help" class="text-gray-500 hover:text-gray-700 active:scale-95">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-2">如何使用本系统？</h3>
+                        <p class="text-gray-600">在左侧输入框中详细描述您的健康问题，然后点击"提交咨询"按钮。系统将自动检索相关健康档案并生成专业分析报告。</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-2">什么是健康档案检索？</h3>
+                        <p class="text-gray-600">系统会根据您的问题，从向量数据库中检索最相关的健康档案信息，为您提供基于证据的健康建议。</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-2">如何获取PDF报告？</h3>
+                        <p class="text-gray-600">分析完成后，点击"下载PDF"按钮即可获取完整的健康分析报告。</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800 mb-2">常见问题</h3>
+                        <ul class="list-disc pl-5 text-gray-600 space-y-1">
+                            <li>系统支持哪些类型的健康问题？</li>
+                            <li>如何保存我的历史查询记录？</li>
+                            <li>报告内容的准确性如何保证？</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 获取DOM元素
+            const queryForm = document.getElementById('query-form');
+            const healthQuery = document.getElementById('health-query');
+            const clearButton = document.getElementById('clear-button');
+            const submitButton = document.getElementById('submit-button');
+            const initialState = document.getElementById('initial-state');
+            const loadingState = document.getElementById('loading-state');
+            const resultState = document.getElementById('result-state');
+            const errorState = document.getElementById('error-state');
+            const progressBar = document.getElementById('progress-bar');
+            const userQueryText = document.getElementById('user-query-text');
+            const resultContent = document.getElementById('result-content');
+            const errorMessage = document.getElementById('error-message');
+            const retryButton = document.getElementById('retry-button');
+            const downloadPdfButton = document.getElementById('download-pdf');
+            const copyButton = document.getElementById('copy-button');
+            const historyList = document.getElementById('history-list');
+            const clearHistoryButton = document.getElementById('clear-history');
+            const helpButton = document.getElementById('help-button');
+            const helpModal = document.getElementById('help-modal');
+            const closeHelpButton = document.getElementById('close-help');
+            const modalOverlay = document.getElementById('modal-overlay');
+            const themeToggle = document.getElementById('theme-toggle');
+            const historySearch = document.getElementById('history-search');
+            // 隐私政策和使用条款模态框
+            const privacyPolicyLink = document.getElementById('privacy-policy-link');
+            const privacyPolicyModal = document.getElementById('privacy-policy-modal');
+            const closePrivacyPolicy = document.getElementById('close-privacy-policy');
+            const privacyPolicyOverlay = document.getElementById('privacy-policy-overlay');
+            const termsLink = document.getElementById('terms-link');
+            const termsModal = document.getElementById('terms-modal');
+            const closeTerms = document.getElementById('close-terms');
+            const termsOverlay = document.getElementById('terms-overlay');
+
+            // 当前查询缓存
+            let currentQuery = '';
+            let currentResult = '';
+            let fullHistory = [];
+            
+            // 模拟进度条
+            function simulateProgress() {
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 15;
+                    if (progress > 90) progress = 90; // 保持在90%直到结果返回
+                    progressBar.style.width = `${progress}%`;
+                }, 300);
+                return () => {
+                    clearInterval(interval);
+                    progressBar.style.width = '100%'; // 完成时设置为100%
+                };
+            }
+
+            // 切换状态显示
+            function showState(state) {
+                [initialState, loadingState, resultState, errorState].forEach(el => el.classList.add('hidden'));
+                state.classList.remove('hidden');
+                
+                if (state === resultState) {
+                    downloadPdfButton.classList.remove('hidden');
+                    copyButton.classList.remove('hidden');
+                } else {
+                    downloadPdfButton.classList.add('hidden');
+                    copyButton.classList.add('hidden');
+                }
+            }
+
+            // 提交查询
+            async function submitQuery(query) {
+                currentQuery = query;
+                showState(loadingState);
+                const finishProgress = simulateProgress();
+                
+                try {
+                    // 调用后端API
+                    const response = await fetch('http://localhost:3222/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            messages: [
+                                { role: 'system', content: 'You are a health assistant.' },
+                                { role: 'user', content: query }
+                            ],
+                            stream: false
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    // 确保正确解析响应内容
+                    if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                        currentResult = data.choices[0].message.content;
+                    } else {
+                        throw new Error('无效的响应格式');
+                    }
+                    
+                    // 显示结果
+                    finishProgress();
+                    userQueryText.textContent = query;
+                    resultContent.innerHTML = formatResult(currentResult);
+                    showState(resultState);
+                    
+                    // 添加到历史记录
+                    addToHistory(query, currentResult);
+                } catch (error) {
+                    console.error('Error:', error);
+                    finishProgress();
+                    errorMessage.textContent = `处理您的请求时发生错误: ${error.message}`;
+                    showState(errorState);
+                }
+            }
+
+            // 格式化结果显示
+            function formatResult(text) {
+                // 简单的Markdown解析
+                return text
+                    .replace(/^# (.*$)/gm, '<h2 class="text-2xl font-bold text-gray-800 mt-6 mb-3">$1</h2>')
+                    .replace(/^## (.*$)/gm, '<h3 class="text-xl font-semibold text-gray-800 mt-4 mb-2">$1</h3>')
+                    .replace(/^### (.*$)/gm, '<h4 class="text-lg font-medium text-gray-700 mt-3 mb-1">$1</h4>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-medium text-gray-800">$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em class="italic text-gray-600">$1</em>')
+                    .replace(/^- (.*$)/gm, '<li class="list-disc ml-5 text-gray-600">$1</li>')
+                    .replace(/\n/g, '<br>');
+            }
+
+            // 添加到历史记录
+            function addToHistory(query, result) {
+                // 获取现有历史
+                let history = JSON.parse(localStorage.getItem('healthQueryHistory') || '[]');
+                
+                // 添加新记录
+                const timestamp = new Date().toLocaleString();
+                history.unshift({ query, timestamp, id: Date.now() });
+                
+                // 限制历史记录数量
+                if (history.length > 10) {
+                    history = history.slice(0, 10);
+                }
+                
+                // 保存到localStorage
+                localStorage.setItem('healthQueryHistory', JSON.stringify(history));
+                fullHistory = history;
+                
+                // 更新UI
+                updateHistoryUI(history);
+            }
+
+            // 更新历史记录UI
+            function updateHistoryUI(history) {
+                if (history.length === 0) {
+                    historyList.innerHTML = '<p class="text-gray-500 text-center py-4">暂无历史记录</p>';
+                    return;
+                }
+                
+                historyList.innerHTML = history.map(item => `
+                    <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary transition-all-300 cursor-pointer history-item active:bg-gray-100" data-id="${item.id}">
+                        <div class="flex justify-between items-start">
+                            <p class="text-sm font-medium text-gray-800 line-clamp-2">${item.query}</p>
+                            <span class="text-xs text-gray-500">${item.timestamp}</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // 添加点击事件
+                document.querySelectorAll('.history-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const id = parseInt(item.dataset.id);
+                        const record = history.find(h => h.id === id);
+                        if (record) {
+                            healthQuery.value = record.query;
+                            submitQuery(record.query);
+                        }
+                    });
+                });
+            }
+
+            // 清除历史记录
+            function clearHistory() {
+                if (confirm('确定要清除所有历史记录吗？')) {
+                    localStorage.removeItem('healthQueryHistory');
+                    fullHistory = [];
+                    updateHistoryUI([]);
+                }
+            }
+
+            // 下载PDF
+            function downloadPDF() {
+                try {
+                    // 从结果中提取PDF文件名（支持[PDF_FILENAME:]标记）
+                    let filename = null;
+                    
+                    // 检查是否有[PDF_FILENAME:]标记
+                    const pdfFilenameMatch = currentResult.match(/\[PDF_FILENAME:(.+?)\]/);
+                    if (pdfFilenameMatch && pdfFilenameMatch[1]) {
+                        filename = pdfFilenameMatch[1].trim();
+                    } else {
+                        // 备用匹配模式
+                        const altPdfMatch = currentResult.match(/请前往 (.+?) 查看报告/);
+                        if (altPdfMatch && altPdfMatch[1]) {
+                            filename = altPdfMatch[1].trim();
+                        }
+                    }
+                    
+                    // 如果没有找到文件名，使用默认名称
+                    if (!filename) {
+                        filename = 'health_report.pdf';
+                    }
+                    
+                    // 调用后端API下载PDF
+                    const downloadUrl = `http://localhost:3222/download-pdf/${encodeURIComponent(filename)}`;
+                    window.open(downloadUrl, '_blank');
+                    
+                    // 显示下载提示
+                    const originalText = downloadPdfButton.innerHTML;
+                    downloadPdfButton.innerHTML = '<i class="fa fa-check mr-1"></i> 下载中...';
+                    downloadPdfButton.classList.add('bg-success');
+                    
+                    setTimeout(() => {
+                        downloadPdfButton.innerHTML = originalText;
+                        downloadPdfButton.classList.remove('bg-success');
+                    }, 2000);
+                } catch (error) {
+                    console.error('PDF下载错误:', error);
+                    alert('PDF下载失败，请稍后重试');
+                }
+            }
+
+            // 复制结果
+            function copyResult() {
+                navigator.clipboard.writeText(currentResult).then(() => {
+                    const originalText = copyButton.innerHTML;
+                    copyButton.innerHTML = '<i class="fa fa-check mr-1"></i> 已复制';
+                    copyButton.classList.remove('border-gray-300', 'text-gray-700');
+                    copyButton.classList.add('border-green-300', 'text-success');
+                    
+                    setTimeout(() => {
+                        copyButton.innerHTML = originalText;
+                        copyButton.classList.remove('border-green-300', 'text-success');
+                        copyButton.classList.add('border-gray-300', 'text-gray-700');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    alert('复制失败，请手动复制内容');
+                });
+            }
+
+            // 搜索历史记录
+            function performSearch(query) {
+                if (!query.trim()) {
+                    updateHistoryUI(fullHistory);
+                    return;
+                }
+                
+                const filteredHistory = fullHistory.filter(item => 
+                    item.query.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                updateHistoryUI(filteredHistory);
+            }
+
+            // 初始化历史记录
+            function initHistory() {
+                const history = JSON.parse(localStorage.getItem('healthQueryHistory') || '[]');
+                fullHistory = history;
+                updateHistoryUI(history);
+            }
+
+            // 初始化主题
+            function initTheme() {
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const savedTheme = localStorage.getItem('theme');
+                
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                    themeToggle.innerHTML = '<i class="fa fa-sun-o text-yellow-400"></i>';
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    themeToggle.innerHTML = '<i class="fa fa-moon-o text-gray-600"></i>';
+                }
+            }
+
+            // 切换主题
+            function toggleTheme() {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                themeToggle.innerHTML = isDark ? 
+                    '<i class="fa fa-sun-o text-yellow-400"></i>' : 
+                    '<i class="fa fa-moon-o text-gray-600"></i>';
+            }
+
+            // 事件监听器
+            queryForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const query = healthQuery.value.trim();
+                if (query) {
+                    submitQuery(query);
+                }
+            });
+
+            clearButton.addEventListener('click', () => {
+                healthQuery.value = '';
+                healthQuery.focus();
+            });
+
+            retryButton.addEventListener('click', () => {
+                if (currentQuery) {
+                    submitQuery(currentQuery);
+                }
+            });
+
+            downloadPdfButton.addEventListener('click', downloadPDF);
+            copyButton.addEventListener('click', copyResult);
+            clearHistoryButton.addEventListener('click', clearHistory);
+            
+            // 历史记录搜索
+            historySearch.addEventListener('input', (e) => {
+                performSearch(e.target.value);
+            });
+            
+            // 帮助模态框
+            helpButton.addEventListener('click', () => {
+                helpModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+
+            function closeHelp() {
+                helpModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+
+            closeHelpButton.addEventListener('click', closeHelp);
+            modalOverlay.addEventListener('click', closeHelp);
+            
+            // 主题切换
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // 隐私政策模态框控制
+            privacyPolicyLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                privacyPolicyModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            function closePrivacyPolicyModal() {
+                privacyPolicyModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+            
+            closePrivacyPolicy.addEventListener('click', closePrivacyPolicyModal);
+            privacyPolicyOverlay.addEventListener('click', closePrivacyPolicyModal);
+            
+            // 使用条款模态框控制
+            termsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                termsModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            function closeTermsModal() {
+                termsModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+            
+            closeTerms.addEventListener('click', closeTermsModal);
+            termsOverlay.addEventListener('click', closeTermsModal);
+            
+            // 添加键盘快捷键 - ESC关闭模态框
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeHelp();
+                    closePrivacyPolicyModal();
+                    closeTermsModal();
+                }
+            });
+            
+            // 初始化
+            initHistory();
+            initTheme();
+            
+            // 添加键盘快捷键
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    submitButton.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
